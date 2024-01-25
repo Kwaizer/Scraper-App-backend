@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 def get_job_scraper(site: str) -> JobScraper:
     if site == "Djinni":
-        return JobScraperDjinni('https://djinni.co/jobs/?primary_keyword=Python&exp_level=1y')
+        return JobScraperDjinni('https://djinni.co/jobs/?q_company=&primary_keyword=Python&exp_level=2y')
     elif site == "Dou":
         return JobScraperDou('https://jobs.dou.ua/vacancies/?category=Python&exp=1-3')
     else:
