@@ -8,23 +8,27 @@ from Scraper.job_posting import JobPosting
 class JobScraperDjinni(JobScraper):
 
     def scrape_jobs(self) -> List[JobPosting]:
-        html_text = requests.get(self.url)
-        soup = BeautifulSoup(html_text.text, 'lxml')
-        jobs = soup.find_all('li', class_='mb-4')
-        job_ids = [job.get('id') for job in jobs]
-
+        # Fetch the RSS content
         job_posts = []
-        for job in jobs:
-            company_name = job.find('a', class_='text-body js-analytics-event').text.replace('  ', '').strip()
-            job_title = job.find('a', class_='job-item__title-link').text.replace('  ', '').strip()
-            published_date = "TODO"  
-            skills = "TODO"  
-            job_salary_element = job.find('span', class_='text-success text-nowrap')
-            salary = (job_salary_element.text
-                      .replace('  ', '').strip()) if job_salary_element is not None else "Isn't available"
-            more_info = f"https://djinni.co{job.h3.find('a', class_='job-item__title-link').get('href')}"
+        response = requests.get(self.url)
+        if response.status_code == 200:
+            # Parse the XML content
+            soup = BeautifulSoup(response.content, 'xml')
 
-            job_post = JobPosting(company_name, job_title, published_date, skills, salary, more_info)
-            job_posts.append(job_post)
+            # Find all <item> elements
+            jobs = soup.find_all('item')
+            for job in jobs:
+                title = job.title.text if job.title else "No title"
+                link = job.link.text if job.link else "No link"
+                description = job.description.text if job.description else "No description"
+                description_soup = BeautifulSoup(description, 'html.parser')
+                description_text = description_soup.get_text(strip=True)
+                pub_date = job.pubDate.text if job.pubDate else "No publication date"
+                guid = job.guid.text if job.guid else "No GUID"
+                categories = [cat.text for cat in job.find_all('category') if cat.text]
+                job_post = JobPosting(title, link, description_text, pub_date, guid, categories)
+                job_posts.append(job_post)
 
-        return job_posts
+            return job_posts
+        else:
+            print("Failed to fetch RSS feed:", response.status_code)
