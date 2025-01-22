@@ -16,7 +16,7 @@ class JobScraperDou(JobScraper):
             # Parse the XML content
             soup = BeautifulSoup(response.content, 'xml')
             job_posts = []
-            # Find all <item> elements
+            # Find all <item> elements from .RSS
             items = soup.find_all('item')
             for item in items:
                 title = item.title.text if item.title else "No title"
@@ -27,11 +27,9 @@ class JobScraperDou(JobScraper):
                 categories = \
                     parse_qs(urlparse(self.url).query).get(
                     'category', ['No category'])[0]
-
-                # Extract plain text from the description while preserving links
                 description_soup = BeautifulSoup(description, 'html.parser')
                 description_text = description_soup.get_text(strip=True)
-                job_post = JobPosting(title, link, description_text, pub_date, guid, categories)
+                job_post = JobPosting(title, link, description_text, pub_date, guid, categories, False, "Dou")
                 job_posts.append(job_post)
 
             return job_posts

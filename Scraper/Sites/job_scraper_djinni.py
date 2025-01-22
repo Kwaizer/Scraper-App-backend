@@ -1,3 +1,4 @@
+import re
 from typing import List
 from bs4 import BeautifulSoup
 import requests
@@ -15,7 +16,7 @@ class JobScraperDjinni(JobScraper):
             # Parse the XML content
             soup = BeautifulSoup(response.content, 'xml')
 
-            # Find all <item> elements
+            # Find all <item> elements from .RSS
             jobs = soup.find_all('item')
             for job in jobs:
                 title = job.title.text if job.title else "No title"
@@ -26,7 +27,7 @@ class JobScraperDjinni(JobScraper):
                 pub_date = job.pubDate.text if job.pubDate else "No publication date"
                 guid = job.guid.text if job.guid else "No GUID"
                 categories = [cat.text for cat in job.find_all('category') if cat.text]
-                job_post = JobPosting(title, link, description_text, pub_date, guid, categories)
+                job_post = JobPosting(title, link, description_text, pub_date, guid, categories, False, "Djinni")
                 job_posts.append(job_post)
 
             return job_posts
